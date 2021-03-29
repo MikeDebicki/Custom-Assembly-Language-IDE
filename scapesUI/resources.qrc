@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/imgs">
+        <file>clipboard.png</file>
+        <file>close.png</file>
+        <file>compile.jpg</file>
+        <file>copy.png</file>
+        <file>cut.png</file>
+        <file>file.png</file>
+        <file>floppy-disk.png</file>
+        <file>open-archive.png</file>
+        <file>stack.png</file>
+        <file>save-as.png</file>
+        <file>running.png</file>
+    </qresource>
+</RCC>

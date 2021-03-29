@@ -1,0 +1,7 @@
+#!/bin/bash
+
+make clean
+qmake scapesUI.pro
+make
+./scapesUI
+

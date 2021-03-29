@@ -1,0 +1,243 @@
+#include "program.h"
+#include <QTextStream>
+#include <QDebug>
+
+Program::Program(QObject* parent)
+    : QObject(parent)
+{
+    //    connect(  ui->plainTextEdit, SIGNAL( sendText( const QString & ) ), identifier, SLOT( updateText( const QString & ) ) );
+}
+
+void Program::parse(QString* list)
+{
+
+    //for reading the text
+    QTextStream stream(list);
+
+    errorcheck.errorcheck(list);
+    //gets the words from text and splitting them
+    word = stream.readAll().split("\n"); //,QString::SkipEmptyParts);
+
+    //looping through the text
+    for (int j = 0; j < word.size(); j++) {
+        //remove the white space from each index
+        Toword = word[j].split(" ", QString::SkipEmptyParts);
+
+        //skips empty lines
+        if (word[j] != "") {
+
+            //check if the first char isnot # which is a comment
+            if (errorcheck.check_for_comment(&Toword[0])) {
+
+                //returns the instruction if its correct
+                result = instructions.contains(Toword[0]);
+
+
+                if (result) {
+
+
+                    //     qDebug()<<Toword[0].at(0);
+                    //qDebug()<<Toword[j];//.count(" ");
+                    if (errorcheck.check_for_cmp(Toword)) {
+                        int counter = 0;
+                        //qDebug()<<Toword.size();
+                        for (int k = j - 1; k >= 0; k--) {
+
+                            QStringList otherwords = word[k].split(" ");
+                            // qDebug() <<"otherwords:  "<<otherwords[0];
+                            if (errorcheck.check_for_dci(otherwords)) {
+                            qDebug()<<"TOWORD"<<Toword;
+                                if (Toword[1] == otherwords[1]) {
+                                    counter++;
+                                    // qDebug() <<"Found the word";
+                                }
+         //                       else {
+                                    //       qDebug ()<<"not Found";
+           //                     }
+                                //         }
+                                //  qDebug() <<"otherwords: "<<otherwords;
+                            }
+                            //                             qDebug()<<"line "<<j<<", "<<Toword.size();
+                        }
+                        for (int k = j - 1; k >= 0; k--) {
+
+                            QStringList otherwords = word[k].split(" ");
+                            // qDebug() <<"otherwords:  "<<otherwords[0];
+                            if (errorcheck.check_for_dci(otherwords)) {
+
+                                if (Toword[2] == otherwords[1]) {
+                                    counter++;
+                                    //qDebug() <<"Found the word";
+                                }
+                            //    else {
+                                    //  qDebug ()<<"not Found";
+                          //      }
+                                //         }
+                                //  qDebug() <<"otherwords: "<<otherwords;
+                            }
+                            //                             qDebug()<<"line "<<j<<", "<<Toword.size();
+                        }
+                        if (counter == 2) {
+
+                            qDebug() << "Found Comp ";
+                        }
+                        else {
+
+                          //  qDebug() << "couldn't Find Comp";
+                            print_errors("Syntax error: line " + QString::number(j) + ", Variable' " + Toword[1] + "' or Variable '"+Toword[2]+ "' was never initialized");
+                            break;
+                        }
+                    }
+                    else if (Toword[0] == "end" or Toword[0] == "#" or Toword[0].at(0) == '#') {
+                        qDebug() << Toword[0];
+                    }
+
+                    else if ( Toword.size() == 2 && errorcheck.check_for_jstatments(Toword)) {
+                        int counter=0;
+
+                        for (int z = 0; z < word.size(); z++) {
+                            if (word[z] != "") {
+                            QStringList j_check=word[z].split(" ");
+                            qDebug()<<"j_check"<<j_check[0].chopped(1);
+                            if(j!=z){
+
+                                    qDebug()<<"I am  inside the second if";
+                                    if(Toword[1]==j_check[0].chopped(1)){
+                                        qDebug()<<"I am  inside the third if";
+                                        counter++;
+                                    }
+
+                            }
+
+                        }
+                        }
+                        if(counter==0){
+
+                            qDebug() << "label for jump couldn't be found ";
+                            print_errors("Syntax error: line " + QString::number(j) + ", Variable' " + Toword[1] + "' was never initialized");
+                            break;
+                        }
+                        if(counter>1){
+
+                            print_errors("Syntax error: line " + QString::number(j) + ", Variable' " + Toword[1] + "' was initialized "+QString::number(counter)+" times");
+                            break;
+                        }
+                        else {
+                            qDebug()<<"found label";
+                        }
+
+
+                    }
+                    else if (errorcheck.check_for_otheroperands(Toword)) {
+                        //   QStringList words2=stream.readAll().split("\n",QString::SkipEmptyParts);
+
+                        int counter=0;
+                        for (int k = j - 1; k >= 0; k--) {
+
+                            QStringList otherwords = word[k].split(" ");
+                            // qDebug() <<"otherwords:  "<<otherwords[0];
+                            if (errorcheck.check_for_dci(otherwords)) {
+
+                                if (Toword[1] == otherwords[1]) {
+
+                                    qDebug() << "Found the word";
+                                    counter++;
+                                }
+
+                            //    else {
+                              //      qDebug() << "not Found";
+                               // }
+                                //         }
+                                //  qDebug() <<"otherwords: "<<otherwords;
+                            }
+
+
+                        }
+                        if(counter==0){
+
+                            qDebug() << "dci couldn't be found ";
+                            print_errors("Syntax error: line " + QString::number(j) + ", Variable' " + Toword[1] + "' was never initialized");
+                            break;
+                        }
+                        if(counter>1){
+
+                            print_errors("Syntax error: line " + QString::number(j) + ", Variable' " + Toword[1] + "' was initialized "+QString::number(counter)+" times");
+                            break;
+                        }
+                    }
+                    else if (Toword.size() == 2 && errorcheck.check_for_dci(Toword)) {
+                        int counter=1;
+                        for (int z = 0; z < j; z++) {
+                            QStringList dci_check=word[z].split(" ");
+                            if(j!=z){
+
+                                if(errorcheck.check_for_dci(dci_check)){
+                                    if(Toword[1]==dci_check[1]){
+
+                                        counter++;
+                                    }
+                                }
+                            }
+
+                        }
+
+                        if(counter==1){
+                         qDebug() << "this is dci";
+
+                        }
+                        else if(counter>1){
+                            qDebug() << "error is dci";
+                            print_errors("Syntax error: line " + QString::number(j) + ", Variable' " + Toword[1] + "' was initialized "+QString::number(counter)+" times");
+                            break;
+                        }
+                    }
+                    else {
+                        print_errors("error: line " + QString::number(j) + ", Incorrect number of Operands for '" + Toword[0] + "'");
+                        break;
+                    }
+                }
+                else if (Toword[0].at(Toword[0].size()-1)==":") {
+                    int counter=1;
+
+                    for (int z = 0; z < j; z++) {
+                        QStringList dci_check=word[z].split(" ");
+
+                        qDebug()<<"THis is"<<dci_check[0]<<"asdasdas";
+                        if(j!=z){
+
+
+                                    if(Toword[0]==dci_check[0]){
+
+                                        counter++;
+                                    }
+
+
+                        }
+
+                    }
+
+                    if(counter==1){
+                     qDebug() << "label";
+
+                    }
+                    else if(counter>1){
+
+                        print_errors("Syntax error: line " + QString::number(j) + ", Label' " + Toword[0] + "' was initialized "+QString::number(counter)+" times");
+                        break;
+                    }
+                }
+                else {
+                    QString line_number = QString::number(j);
+                    print_errors("Syntax error: line " + line_number + " '" + Toword[0] + "' Unknow Instruction");
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void Program::print_errors(QString error_message)
+{
+
+    emit send_print_errors(error_message);
+}
